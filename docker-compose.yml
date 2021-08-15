@@ -1,0 +1,26 @@
+version: '3.3'
+services:
+    app:
+        build:
+            context: ./app
+            args:
+              COMMIT: ${COMMIT}
+            labels:
+              commit: ${COMMIT}
+        networks:
+              - traefik
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.middlewares.test-retry.retry.attempts=3"
+            - "traefik.http.middlewares.test-retry.retry.initialinterval=1000ms"
+            - "traefik.http.routers.app.rule=Host(`app.traefik.me`)"
+            - "traefik.http.routers.app.entrypoints=web"
+            - "traefik.http.services.app.loadbalancer.server.port=8080"
+            - "traefik.http.services.app.loadbalancer.healthCheck.path=/ping"
+            - "traefik.http.services.app.loadbalancer.healthCheck.interval=10s"
+            - "traefik.http.services.app.loadbalancer.healthCheck.timeout=1s"
+
+networks:
+    traefik:
+        external:
+            name: traefik_gw
